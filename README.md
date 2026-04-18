@@ -67,7 +67,7 @@ del /q *.spec
 ### Build command
 
 ```
-pyinstaller --clean --noconfirm --onedir --windowed --name dlss-updater --icon=icon.ico --version-file=version_info.txt --add-data "icon.ico;." main.py
+pyinstaller --clean --noconfirm --onefile --windowed --name dlss-updater --icon=icon.ico --version-file=version_info.txt --add-data "icon.ico;." main.py
 ```
 
 ### Output
