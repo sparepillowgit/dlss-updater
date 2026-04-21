@@ -1,6 +1,6 @@
 # DLSS Updater
 
-A simple desktop tool to find and update NVIDIA DLSS files in your game folders.
+A simple open-source desktop tool to find and update NVIDIA DLSS files in your game folders.
 
 ---
 
@@ -10,6 +10,7 @@ A simple desktop tool to find and update NVIDIA DLSS files in your game folders.
 - Detects:
   - `nvngx_dlss.dll`
   - `nvngx_dlssg.dll`
+  - `nvngx_dlssd.dll`
 - Compares installed versions against the latest release
 
 ---

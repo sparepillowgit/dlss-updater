@@ -1,16 +1,16 @@
 from pathlib import Path
 
-DLSS_DLL = "nvngx_dlss.dll"
-DLSSG_DLL = "nvngx_dlssg.dll"
+TARGET_FILES = {
+    "nvngx_dlss.dll",
+    "nvngx_dlssg.dll",
+    "nvngx_dlssd.dll",
+}
 
 
 def find_dlss_files(root_folder: str) -> dict[str, list[Path]]:
     root = Path(root_folder)
 
-    found_files = {
-        DLSS_DLL: [],
-        DLSSG_DLL: [],
-    }
+    found_files = {name: [] for name in TARGET_FILES}
 
     for path in root.rglob("*"):
         if not path.is_file():
@@ -18,9 +18,7 @@ def find_dlss_files(root_folder: str) -> dict[str, list[Path]]:
 
         name = path.name.lower()
 
-        if name == DLSS_DLL:
-            found_files[DLSS_DLL].append(path)
-        elif name == DLSSG_DLL:
-            found_files[DLSSG_DLL].append(path)
+        if name in TARGET_FILES:
+            found_files[name].append(path)
 
     return found_files

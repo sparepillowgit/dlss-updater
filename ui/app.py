@@ -5,11 +5,15 @@ from collections import Counter
 from tkinter import filedialog, ttk
 
 from ui.styles import BG_MAIN, BG_SURFACE, FG_PRIMARY, FONT_MONO
-from utils.dlss_finder import DLSS_DLL, DLSSG_DLL, find_dlss_files
+from utils.dlss_finder import find_dlss_files
 from utils.dlss_manifest import fetch_manifest, get_manifest_entry
 from utils.dlss_updater import download_dlss_files, replace_dlss_files
 from utils.file_version import get_file_version
 from utils.path_validation import is_invalid_directory
+
+DLSS_DLL = "nvngx_dlss.dll"
+DLSSG_DLL = "nvngx_dlssg.dll"
+DLSSD_DLL = "nvngx_dlssd.dll"
 
 
 class App(tk.Frame):
@@ -56,7 +60,6 @@ class App(tk.Frame):
         )
         self.update_button.state(["disabled"])
 
-        # --- Read-only log ---
         self.log_text = tk.Text(
             self,
             bg=BG_SURFACE,
@@ -120,8 +123,9 @@ class App(tk.Frame):
                 name: paths for name, paths in found_files.items() if paths
             }
 
-            dlss_count = len(found_files[DLSS_DLL])
-            dlssg_count = len(found_files[DLSSG_DLL])
+            dlss_count = len(found_files.get(DLSS_DLL, []))
+            dlssg_count = len(found_files.get(DLSSG_DLL, []))
+            dlssd_count = len(found_files.get(DLSSD_DLL, []))
 
             if dlss_count > 0:
                 self.queue_log(f"Found {dlss_count} instance(s) of {DLSS_DLL}")
@@ -132,6 +136,11 @@ class App(tk.Frame):
                 self.queue_log(f"Found {dlssg_count} instance(s) of {DLSSG_DLL}")
             else:
                 self.queue_log(f"Did not find {DLSSG_DLL}")
+
+            if dlssd_count > 0:
+                self.queue_log(f"Found {dlssd_count} instance(s) of {DLSSD_DLL}")
+            else:
+                self.queue_log(f"Did not find {DLSSD_DLL}")
 
             if not found_dlss_files:
                 self.queue_log("No DLSS files were found", "error")
