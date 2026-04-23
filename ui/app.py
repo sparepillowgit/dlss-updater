@@ -5,6 +5,7 @@ from collections import Counter
 from tkinter import filedialog, ttk
 
 from ui.styles import BG_MAIN, BG_SURFACE, FG_PRIMARY, FONT_MONO
+from utils.dlss_compat import can_update_between_versions, get_skip_reason
 from utils.dlss_finder import find_dlss_files
 from utils.dlss_manifest import fetch_manifest, get_manifest_entry
 from utils.dlss_updater import download_dlss_files, replace_dlss_files
@@ -56,7 +57,11 @@ class App(tk.Frame):
             style="Success.TButton",
         )
         self.update_button.grid(
-            row=1, column=0, columnspan=2, sticky="ew", pady=(0, 10)
+            row=1,
+            column=0,
+            columnspan=2,
+            sticky="ew",
+            pady=(0, 10),
         )
         self.update_button.state(["disabled"])
 
@@ -102,22 +107,21 @@ class App(tk.Frame):
 
     def start_update_dlss(self):
         folder = self.folder_path.get()
-
         if not folder:
             self.log("No folder selected", "error")
             return
 
         self.set_busy(True)
-
         worker = threading.Thread(
-            target=self.update_dlss_worker, args=(folder,), daemon=True
+            target=self.update_dlss_worker,
+            args=(folder,),
+            daemon=True,
         )
         worker.start()
 
     def update_dlss_worker(self, folder: str):
         try:
             self.queue_log("Searching for DLSS files...")
-
             found_files = find_dlss_files(folder)
             found_dlss_files = {
                 name: paths for name, paths in found_files.items() if paths
@@ -149,68 +153,76 @@ class App(tk.Frame):
             self.queue_log("Checking installed versions...")
 
             manifest = fetch_manifest()
-
             download_targets = {}
             files_to_replace = {}
             version_details = {}
 
             for dll_name, file_paths in found_dlss_files.items():
                 entry = get_manifest_entry(manifest, dll_name)
-
                 if not entry:
                     self.queue_log(f"No manifest entry found for {dll_name}", "error")
                     continue
 
                 latest_version = entry.get("version", "unknown")
                 download_url = entry.get("url")
-
                 if not download_url:
                     self.queue_log(
                         f"No download URL found in manifest for {dll_name}", "error"
                     )
                     continue
 
-                local_versions = [
-                    get_file_version(str(file_path)) or "unknown"
-                    for file_path in file_paths
-                ]
+                up_to_date_paths = []
+                up_to_date_versions = []
+                replace_paths = []
+                replace_versions = []
 
-                unique_versions = sorted(set(local_versions))
+                for file_path in file_paths:
+                    installed_version = get_file_version(str(file_path)) or "unknown"
 
-                if len(unique_versions) == 1:
-                    only_version = unique_versions[0]
-
-                    if only_version == latest_version:
+                    if not can_update_between_versions(
+                        installed_version, latest_version
+                    ):
+                        reason = get_skip_reason(
+                            dll_name, installed_version, latest_version
+                        )
+                        self.queue_log(f"Skipping {dll_name}: {reason}")
                         self.queue_log(
-                            f"All {len(file_paths)} instance(s) of {dll_name} are already up to date ({only_version})",
-                            "success",
+                            f"Skipped file: {file_path} (installed: {installed_version}, latest: {latest_version})"
                         )
                         continue
 
+                    if installed_version == latest_version:
+                        up_to_date_paths.append(file_path)
+                        up_to_date_versions.append(installed_version)
+                    else:
+                        replace_paths.append(file_path)
+                        replace_versions.append(installed_version)
+
+                if up_to_date_paths:
                     self.queue_log(
-                        f"{dll_name} will update {len(file_paths)} instance(s) from {only_version} to {latest_version}"
+                        f"{len(up_to_date_paths)} instance(s) of {dll_name} are already up to date ({self.format_version_summary(up_to_date_versions)})",
+                        "success",
                     )
-                else:
-                    version_summary = self.format_version_summary(local_versions)
-                    self.queue_log(
-                        f"{dll_name} has mixed installed versions: {version_summary}"
-                    )
-                    self.queue_log(
-                        f"{dll_name} will update {len(file_paths)} instance(s) to {latest_version}"
-                    )
+
+                if not replace_paths:
+                    continue
+
+                self.queue_log(
+                    f"{dll_name} will update {len(replace_paths)} instance(s) from {self.format_version_summary(replace_versions)} to {latest_version}"
+                )
 
                 download_targets[dll_name] = {
                     "url": download_url,
                     "version": latest_version,
                 }
-                files_to_replace[dll_name] = file_paths
+                files_to_replace[dll_name] = replace_paths
                 version_details[dll_name] = {
-                    "local_versions": local_versions,
+                    "local_versions": replace_versions,
                     "latest_version": latest_version,
                 }
 
             if not download_targets:
-                self.queue_log("All found DLSS files are already up to date", "success")
+                self.queue_log("No compatible DLSS files need updating", "success")
                 return
 
             cache_hits = []
@@ -228,7 +240,8 @@ class App(tk.Frame):
                     self.queue_log(f"Downloading {dll_name}... {value}%")
 
             downloaded_files = download_dlss_files(
-                download_targets, progress_callback=report_progress
+                download_targets,
+                progress_callback=report_progress,
             )
 
             if not downloaded_files:
@@ -251,7 +264,6 @@ class App(tk.Frame):
             replace_targets = {
                 dll_name: files_to_replace[dll_name] for dll_name in downloaded_files
             }
-
             update_results = replace_dlss_files(replace_targets, downloaded_files)
 
             had_errors = False
@@ -312,16 +324,13 @@ class App(tk.Frame):
         while not self.log_queue.empty():
             message, tag = self.log_queue.get()
             self.log(message, tag)
-
         self.after(100, self.process_log_queue)
 
     def log(self, message, tag=None):
         self.log_text.configure(state="normal")
-
         if tag:
             self.log_text.insert("end", message + "\n", tag)
         else:
             self.log_text.insert("end", message + "\n")
-
         self.log_text.see("end")
         self.log_text.configure(state="disabled")
