@@ -21,7 +21,7 @@ A simple open-source desktop tool to find and update NVIDIA DLSS files in your g
 
 ## Screenshot
 
-![DLSS Updater Screenshot](assets/screenshot2.png)
+![DLSS Updater Screenshot](assets/screenshot-v1.2.0.png)
 
 ---
 
