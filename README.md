@@ -12,6 +12,10 @@ A simple open-source desktop tool to find and update NVIDIA DLSS files in your g
   - `nvngx_dlssg.dll`
   - `nvngx_dlssd.dll`
 - Compares installed versions against the latest release
+- Safely updates DLSS files with version compatibility checks:
+  - `1.x` versions are only updated within `1.x`
+  - `2.x` and `3.x` versions are treated as compatible
+  - Blocks unsafe cross-version updates that can break older titles
 
 ---
 
