@@ -13,15 +13,17 @@ A simple open-source desktop tool to find and update NVIDIA DLSS files in your g
   - `nvngx_dlssd.dll`
 - Compares installed versions against the latest release
 - Safely updates DLSS files with version compatibility checks:
-  - `1.x` versions are only updated within `1.x`
-  - `2.x` and `3.x` versions are treated as compatible
+  - 1.x versions are only updated within 1.x
+  - 2.x and 3.x versions are treated as compatible
   - Blocks unsafe cross-version updates that can break older titles
+- Automatically creates per-file backups before updating
+- Restore original DLSS files from backups at any time
 
 ---
 
 ## Screenshot
 
-![DLSS Updater Screenshot](assets/screenshot-v1.2.0.png)
+![DLSS Updater Screenshot](assets/screenshot-v1.3.0.png)
 
 ---
 
@@ -39,7 +41,6 @@ https://github.com/sparepillowgit/dlss-updater/releases/latest
 2. Click **"Choose Game Folder"**
 3. Select your game installation directory
 4. Click **"Update DLSS Files"**
-5. Follow the log output
 
 ---
 
