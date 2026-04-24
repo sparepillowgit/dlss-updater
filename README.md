@@ -38,7 +38,7 @@ https://github.com/sparepillowgit/dlss-updater/releases/latest
 ## Usage
 
 1. Launch the application
-2. Click **"Choose Game Folder"**
+2. Click **"Select Game Folder"**
 3. Select your game installation directory
 4. Click **"Update DLSS Files"**
 
