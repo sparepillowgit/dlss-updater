@@ -4,10 +4,13 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 from utils.app_paths import get_download_cache_dir
+from utils.dlss_backup import BackupResult, create_backup_for_file
+from utils.file_version import get_file_version
 
 
 def download_dlss_files(
-    download_targets: dict[str, dict], progress_callback=None
+    download_targets: dict[str, dict],
+    progress_callback=None,
 ) -> dict[str, Path]:
     downloaded_files = {}
 
@@ -20,10 +23,10 @@ def download_dlss_files(
 
         cached_file = cache_dir / dll_name
 
-        # --- CACHE HIT ---
         if cached_file.exists():
             if progress_callback:
                 progress_callback(dll_name, "cached", version)
+
             downloaded_files[dll_name] = cached_file
             continue
 
@@ -31,13 +34,13 @@ def download_dlss_files(
             with urlopen(url) as response:
                 total_size = int(response.headers.get("Content-Length", 0))
                 downloaded = 0
-
                 last_log_time = 0.0
                 last_logged_percent = -1
 
                 with open(cached_file, "wb") as file_handle:
                     while True:
                         chunk = response.read(64 * 1024)
+
                         if not chunk:
                             break
 
@@ -65,27 +68,22 @@ def download_dlss_files(
 
                 downloaded_files[dll_name] = cached_file
 
-        except (HTTPError, URLError):
+        except (HTTPError, URLError, OSError):
             if cached_file.exists():
                 try:
                     cached_file.unlink()
                 except OSError:
                     pass
-            continue
-        except OSError:
-            if cached_file.exists():
-                try:
-                    cached_file.unlink()
-                except OSError:
-                    pass
+
             continue
 
     return downloaded_files
 
 
 def replace_dlss_files(
-    found_files: dict[str, list[Path]], downloaded_files: dict[str, Path]
-) -> dict[str, tuple[bool, list[Path], list[tuple[Path, str]]]]:
+    found_files: dict[str, list[Path]],
+    downloaded_files: dict[str, Path],
+) -> dict[str, tuple[bool, list[Path], list[tuple[Path, str]], list[BackupResult]]]:
     results = {}
 
     for dll_name, target_paths in found_files.items():
@@ -96,16 +94,34 @@ def replace_dlss_files(
                 False,
                 [],
                 [(Path(""), f"Download missing for {dll_name}")],
+                [],
             )
             continue
 
         succeeded = []
         failed = []
+        backup_results = []
 
         for target_path in target_paths:
+            target_path = Path(target_path)
+            installed_version = get_file_version(str(target_path)) or "unknown"
+
+            backup_result = create_backup_for_file(target_path, installed_version)
+            backup_results.append(backup_result)
+
+            if not backup_result.success:
+                failed.append(
+                    (
+                        target_path,
+                        f"Backup failed: {backup_result.reason or 'Unknown error'}",
+                    )
+                )
+                continue
+
             try:
                 shutil.copy2(source_path, target_path)
                 succeeded.append(target_path)
+
             except PermissionError:
                 failed.append(
                     (
@@ -113,9 +129,10 @@ def replace_dlss_files(
                         "Permission denied. Try running the app as administrator.",
                     )
                 )
+
             except OSError as e:
                 failed.append((target_path, str(e)))
 
-        results[dll_name] = (len(failed) == 0, succeeded, failed)
+        results[dll_name] = (len(failed) == 0, succeeded, failed, backup_results)
 
     return results

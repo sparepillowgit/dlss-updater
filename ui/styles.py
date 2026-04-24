@@ -3,9 +3,13 @@ from tkinter import ttk
 # --- Theme constants ---
 BG_MAIN = "#121212"
 BG_SURFACE = "#1e1e1e"
+
 BG_BUTTON = "#2d2d2d"
 BG_BUTTON_ACTIVE = "#3a3a3a"
 BG_BUTTON_PRESSED = "#1f1f1f"
+
+BG_TOOLBAR_ACTIVE = "#242424"
+BG_TOOLBAR_PRESSED = "#1a1a1a"
 
 FG_PRIMARY = "white"
 
@@ -15,7 +19,6 @@ FONT_MONO = ("Consolas", 10)
 
 def configure_styles():
     style = ttk.Style()
-
     style.theme_use("clam")
 
     # --- Entry ---
@@ -44,7 +47,52 @@ def configure_styles():
 
     style.map(
         "Dark.TButton",
-        background=[("active", BG_BUTTON_ACTIVE), ("pressed", BG_BUTTON_PRESSED)],
+        background=[
+            ("active", BG_BUTTON_ACTIVE),
+            ("pressed", BG_BUTTON_PRESSED),
+        ],
+    )
+
+    # --- Secondary toolbar-style menu button ---
+    style.layout(
+        "Toolbar.TMenubutton",
+        [
+            (
+                "Menubutton.padding",
+                {
+                    "sticky": "nswe",
+                    "children": [
+                        (
+                            "Menubutton.label",
+                            {"sticky": "nswe"},
+                        )
+                    ],
+                },
+            )
+        ],
+    )
+
+    style.configure(
+        "Toolbar.TMenubutton",
+        background=BG_MAIN,
+        foreground=FG_PRIMARY,
+        padding=(4, 1),
+        font=FONT_UI,
+        relief="flat",
+        borderwidth=0,
+        anchor="center",
+    )
+
+    style.map(
+        "Toolbar.TMenubutton",
+        background=[
+            ("active", BG_TOOLBAR_ACTIVE),
+            ("pressed", BG_TOOLBAR_PRESSED),
+            ("disabled", BG_MAIN),
+        ],
+        foreground=[
+            ("disabled", "#777777"),
+        ],
     )
 
     # --- NVIDIA themed primary button ---
