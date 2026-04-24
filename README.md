@@ -4,6 +4,14 @@ A simple open-source desktop tool to find and update NVIDIA DLSS files in your g
 
 ---
 
+## Official Links
+
+- Website: https://www.dlssupdater.com
+- GitHub: https://github.com/sparepillowgit/dlss-updater
+- Latest Release: https://github.com/sparepillowgit/dlss-updater/releases/latest
+
+---
+
 ## Features
 
 - Recursively scans a selected game folder
