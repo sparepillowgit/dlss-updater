@@ -1,6 +1,12 @@
 # DLSS Updater
 
-A simple open-source desktop tool to find and update NVIDIA DLSS files in your game folders.
+A simple open-source, on-demand desktop tool for finding and updating NVIDIA DLSS files in your game folders.
+
+![CI](https://github.com/sparepillowgit/dlss-updater/actions/workflows/tests.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/sparepillowgit/dlss-updater)
+![Last commit](https://img.shields.io/github/last-commit/sparepillowgit/dlss-updater)
+![License](https://img.shields.io/github/license/sparepillowgit/dlss-updater)
+![Python](https://img.shields.io/badge/python-3.13-blue)
 
 ---
 
@@ -95,10 +101,9 @@ This can happen because the tool downloads and replaces files, behaviour similar
 
 #### Requirements
 
-- Python 3.10+
-- pip
+- Python 3.13
 
-#### Environment Setup
+#### Environment Setup (Windows)
 
 ```bash
 python -m venv .venv
@@ -120,11 +125,11 @@ pyinstaller --clean --noconfirm --onefile --windowed --name dlss-updater --icon=
 The built application will be created in:
 
 ```
-dist\dlss-updater\
+dist\
 ```
 
 Run the executable from that folder:
 
 ```
-dist\dlss-updater\dlss-updater.exe
+dist\dlss-updater.exe
 ```
