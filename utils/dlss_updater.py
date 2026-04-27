@@ -1,11 +1,15 @@
 import shutil
 import time
 from pathlib import Path
+from typing import Callable
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
+
 from utils.app_paths import get_download_cache_dir
-from utils.dlss_backup import BackupResult, create_backup_for_file
+from utils.dlss_backup import BackupResult, create_backup_for_file, get_backup_path
 from utils.file_version import get_file_version
+
+ConfirmOverwriteBackup = Callable[[Path, Path], bool]
 
 
 def download_dlss_files(
@@ -83,6 +87,7 @@ def download_dlss_files(
 def replace_dlss_files(
     found_files: dict[str, list[Path]],
     downloaded_files: dict[str, Path],
+    confirm_overwrite_backup: ConfirmOverwriteBackup | None = None,
 ) -> dict[str, tuple[bool, list[Path], list[tuple[Path, str]], list[BackupResult]]]:
     results = {}
 
@@ -105,8 +110,21 @@ def replace_dlss_files(
         for target_path in target_paths:
             target_path = Path(target_path)
             installed_version = get_file_version(str(target_path)) or "unknown"
+            backup_path = get_backup_path(target_path, installed_version)
 
-            backup_result = create_backup_for_file(target_path, installed_version)
+            overwrite_existing_backup = False
+
+            if backup_path.exists() and confirm_overwrite_backup:
+                overwrite_existing_backup = confirm_overwrite_backup(
+                    target_path,
+                    backup_path,
+                )
+
+            backup_result = create_backup_for_file(
+                target_path,
+                installed_version,
+                overwrite_existing=overwrite_existing_backup,
+            )
             backup_results.append(backup_result)
 
             if not backup_result.success:

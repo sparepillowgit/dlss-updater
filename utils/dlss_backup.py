@@ -43,7 +43,11 @@ def get_backup_path(file_path: str | Path, version: str | None) -> Path:
     return file_path.with_name(f"{file_path.name}.{version_text}{BACKUP_SUFFIX}")
 
 
-def create_backup_for_file(file_path: str | Path, version: str | None) -> BackupResult:
+def create_backup_for_file(
+    file_path: str | Path,
+    version: str | None,
+    overwrite_existing: bool = False,
+) -> BackupResult:
     file_path = Path(file_path)
     backup_path = get_backup_path(file_path, version)
 
@@ -58,13 +62,26 @@ def create_backup_for_file(file_path: str | Path, version: str | None) -> Backup
         )
 
     if backup_path.exists():
-        return BackupResult(
-            file_path=file_path,
-            backup_path=backup_path,
-            success=True,
-            created=False,
-            skipped_existing=True,
-        )
+        if not overwrite_existing:
+            return BackupResult(
+                file_path=file_path,
+                backup_path=backup_path,
+                success=True,
+                created=False,
+                skipped_existing=True,
+            )
+
+        try:
+            backup_path.unlink()
+        except OSError as e:
+            return BackupResult(
+                file_path=file_path,
+                backup_path=backup_path,
+                success=False,
+                created=False,
+                skipped_existing=False,
+                reason=f"Could not overwrite existing backup: {e}",
+            )
 
     try:
         with ZipFile(backup_path, "w", compression=ZIP_DEFLATED) as zip_file:

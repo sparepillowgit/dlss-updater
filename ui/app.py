@@ -181,8 +181,12 @@ class App(tk.Frame):
 
     def update_dlss_worker(self, folder: str):
         try:
-            result = update_dlss_files(folder)
-            self.queue_service_events(result.events)
+            result = update_dlss_files(
+                folder,
+                confirm_overwrite_backup=self.confirm_overwrite_backup,
+                emit=self.queue_service_event,
+            )
+
             self.after(
                 0,
                 lambda: setattr(
@@ -196,9 +200,40 @@ class App(tk.Frame):
         finally:
             self.after(0, lambda: self.set_busy(False))
 
+    def confirm_overwrite_backup(self, file_path, backup_path) -> bool:
+        filename = backup_path.name
+
+        parts = filename.split(".dll.")
+        if len(parts) > 1:
+            backup_version = parts[1].replace(".dubackup.zip", "")
+        else:
+            backup_version = "unknown"
+
+        display = f"{file_path.name} ({backup_version})"
+
+        response = {"replace": False}
+        prompt_finished = threading.Event()
+
+        def ask_user():
+            response["replace"] = messagebox.askyesno(
+                "Replace Backup?",
+                f"{display}\n\n"
+                "Replace existing backup?\n\n"
+                "Only do this if the current DLSS version is working correctly.",
+            )
+            prompt_finished.set()
+
+        self.after(0, ask_user)
+        prompt_finished.wait()
+
+        return response["replace"]
+
+    def queue_service_event(self, event):
+        self.queue_log(event.message, event.tag)
+
     def queue_service_events(self, events):
         for event in events:
-            self.queue_log(event.message, event.tag)
+            self.queue_service_event(event)
 
     def queue_log(self, message: str, tag=None):
         self.log_queue.put((message, tag))

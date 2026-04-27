@@ -7,7 +7,7 @@ from ui.styles import configure_styles, BG_MAIN
 from utils.window import centre_window
 
 # --- App version ---
-APP_VERSION = "1.3.1"
+APP_VERSION = "1.3.2"
 
 
 def resource_path(relative_path: str) -> str:
