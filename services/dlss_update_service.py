@@ -41,7 +41,9 @@ def update_dlss_files(folder: str | Path) -> DlssUpdateResult:
 
         if not entry:
             result.had_errors = True
-            result.events.append(ServiceEvent(f"No manifest entry found for {dll_name}", "error"))
+            result.events.append(
+                ServiceEvent(f"No manifest entry found for {dll_name}", "error")
+            )
             continue
 
         latest_version = entry.get("version", "unknown")
@@ -49,7 +51,11 @@ def update_dlss_files(folder: str | Path) -> DlssUpdateResult:
 
         if not download_url:
             result.had_errors = True
-            result.events.append(ServiceEvent(f"No download URL found in manifest for {dll_name}", "error"))
+            result.events.append(
+                ServiceEvent(
+                    f"No download URL found in manifest for {dll_name}", "error"
+                )
+            )
             continue
 
         replace_paths, replace_versions = _collect_update_targets(
@@ -80,7 +86,9 @@ def update_dlss_files(folder: str | Path) -> DlssUpdateResult:
         }
 
     if not download_targets:
-        result.events.append(ServiceEvent("No compatible DLSS files need updating", "success"))
+        result.events.append(
+            ServiceEvent("No compatible DLSS files need updating", "success")
+        )
         return result
 
     downloaded_files = _download_required_files(result, download_targets)
@@ -93,7 +101,9 @@ def update_dlss_files(folder: str | Path) -> DlssUpdateResult:
     for dll_name in download_targets:
         if dll_name not in downloaded_files:
             result.had_errors = True
-            result.events.append(ServiceEvent(f"Failed to download {dll_name}", "error"))
+            result.events.append(
+                ServiceEvent(f"Failed to download {dll_name}", "error")
+            )
 
     result.events.append(ServiceEvent("Backing up and replacing files..."))
 
@@ -120,7 +130,9 @@ def _add_found_counts(
         count = len(found_files.get(dll_name, []))
 
         if count > 0:
-            result.events.append(ServiceEvent(f"Found {count} instance(s) of {dll_name}"))
+            result.events.append(
+                ServiceEvent(f"Found {count} instance(s) of {dll_name}")
+            )
         else:
             result.events.append(ServiceEvent(f"Did not find {dll_name}"))
 
@@ -179,7 +191,9 @@ def _download_required_files(
     def report_progress(dll_name, value, version=None):
         if value == "cached":
             cache_hits.append(dll_name)
-            result.events.append(ServiceEvent(f"Using cached {dll_name} for version {version}"))
+            result.events.append(
+                ServiceEvent(f"Using cached {dll_name} for version {version}")
+            )
         elif value is None:
             if dll_name not in seen_downloads:
                 seen_downloads.add(dll_name)
@@ -215,9 +229,13 @@ def _add_update_results(
 
         for backup_result in backup_results:
             if backup_result.success and backup_result.created:
-                result.events.append(ServiceEvent(f"Backed up {backup_result.file_path}"))
+                result.events.append(
+                    ServiceEvent(f"Backed up {backup_result.file_path}")
+                )
             elif backup_result.success and backup_result.skipped_existing:
-                result.events.append(ServiceEvent(f"Backup already exists for {backup_result.file_path}"))
+                result.events.append(
+                    ServiceEvent(f"Backup already exists for {backup_result.file_path}")
+                )
 
         if succeeded_paths:
             result.updated_count += len(succeeded_paths)
@@ -231,7 +249,9 @@ def _add_update_results(
         for failed_path, reason in failed_paths:
             result.had_errors = True
             result.events.append(
-                ServiceEvent(f"Failed to update {dll_name}: {failed_path} ({reason})", "error")
+                ServiceEvent(
+                    f"Failed to update {dll_name}: {failed_path} ({reason})", "error"
+                )
             )
 
         if not success:

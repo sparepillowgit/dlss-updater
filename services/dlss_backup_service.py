@@ -50,7 +50,9 @@ def restore_dlss_backups(folder: str | Path) -> BackupRestoreResult:
     if result.restored_count and not result.had_errors:
         result.events.append(ServiceEvent("DLSS backup restore complete", "success"))
     elif result.restored_count:
-        result.events.append(ServiceEvent("DLSS backup restore finished with errors", "error"))
+        result.events.append(
+            ServiceEvent("DLSS backup restore finished with errors", "error")
+        )
     else:
         result.events.append(ServiceEvent("No DLSS backups were restored", "error"))
 
