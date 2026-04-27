@@ -1,9 +1,9 @@
 import queue
 import threading
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog, messagebox, ttk
 
-from services.dlss_backup_service import restore_dlss_backups
+from services.dlss_backup_service import delete_dlss_backups, restore_dlss_backups
 from services.dlss_update_service import update_dlss_files
 from ui.styles import BG_MAIN, BG_SURFACE, FG_PRIMARY, FONT_MONO
 from utils.path_validation import is_invalid_directory
@@ -57,6 +57,10 @@ class App(tk.Frame):
         self.backups_menu.add_command(
             label="Restore DLSS Backups",
             command=self.start_restore_backups,
+        )
+        self.backups_menu.add_command(
+            label="Delete DLSS Backups",
+            command=self.start_delete_backups,
         )
         self.backups_button["menu"] = self.backups_menu
 
@@ -130,6 +134,17 @@ class App(tk.Frame):
     def start_restore_backups(self):
         self.start_worker(self.restore_backups_worker)
 
+    def start_delete_backups(self):
+        confirm = messagebox.askyesno(
+            "Delete Backups",
+            "Are you sure you want to delete all DLSS backups?",
+        )
+
+        if not confirm:
+            return
+
+        self.start_worker(self.delete_backups_worker)
+
     def start_worker(self, worker_target):
         folder = self.folder_path.get()
 
@@ -149,6 +164,15 @@ class App(tk.Frame):
     def restore_backups_worker(self, folder: str):
         try:
             result = restore_dlss_backups(folder)
+            self.queue_service_events(result.events)
+        except Exception as e:
+            self.queue_log(f"Unexpected error: {e}", "error")
+        finally:
+            self.after(0, lambda: self.set_busy(False))
+
+    def delete_backups_worker(self, folder: str):
+        try:
+            result = delete_dlss_backups(folder)
             self.queue_service_events(result.events)
         except Exception as e:
             self.queue_log(f"Unexpected error: {e}", "error")

@@ -57,3 +57,40 @@ def restore_dlss_backups(folder: str | Path) -> BackupRestoreResult:
         result.events.append(ServiceEvent("No DLSS backups were restored", "error"))
 
     return result
+
+
+def delete_dlss_backups(folder: str | Path) -> BackupRestoreResult:
+    result = BackupRestoreResult()
+
+    result.events.append(ServiceEvent("Searching for DLSS backups..."))
+
+    backup_files = find_backup_files(folder)
+
+    if not backup_files:
+        result.events.append(ServiceEvent("No DLSS backup files found", "error"))
+        return result
+
+    result.events.append(ServiceEvent(f"Found {len(backup_files)} backup file(s)"))
+    result.events.append(ServiceEvent("Deleting backups..."))
+
+    deleted_count = 0
+
+    for backup_file in backup_files:
+        try:
+            Path(backup_file).unlink()
+            deleted_count += 1
+            result.events.append(ServiceEvent(f"Deleted {backup_file}", "success"))
+        except Exception as e:
+            result.had_errors = True
+            result.events.append(
+                ServiceEvent(f"Failed to delete {backup_file}: {e}", "error")
+            )
+
+    if deleted_count and not result.had_errors:
+        result.events.append(ServiceEvent("All backups deleted", "success"))
+    elif deleted_count:
+        result.events.append(ServiceEvent("Some backups deleted with errors", "error"))
+    else:
+        result.events.append(ServiceEvent("No backups were deleted", "error"))
+
+    return result
