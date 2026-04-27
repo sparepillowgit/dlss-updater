@@ -21,6 +21,9 @@ class VS_FIXEDFILEINFO(ctypes.Structure):
 
 
 def get_file_version(path: str) -> str | None:
+    if not hasattr(ctypes, "windll"):
+        return None
+
     size = ctypes.windll.version.GetFileVersionInfoSizeW(path, None)
     if not size:
         return None
