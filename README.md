@@ -72,28 +72,28 @@ https://github.com/sparepillowgit/dlss-updater/releases/latest
 
 ## FAQ
 
-**What are DLSS files?**
+**What are DLSS files?**  
 DLSS files are NVIDIA libraries used by supported games for features like AI upscaling, frame generation, and ray reconstruction. Files such as nvngx_dlss.dll are bundled with games and can sometimes be updated for better performance or image quality.
 
-**How does DLSS Updater work?**
+**How does DLSS Updater work?**  
 It scans a selected game folder, detects DLSS files, and updates them when newer versions are available.
 
-**"But you can swap DLSS files with the NVIDIA App now, why do I need this?"**
+**"But you can swap DLSS files with the NVIDIA App now, why do I need this?"**  
 DLSS Updater exists for people who don't want a ~170 MB application and its background processes just to manage a few DLSS files. It's a small tool that does one job and then gets out of the way. I'm not a fan of software accumulating features until a simple utility turns into an entire platform. Not everything needs to be bundled into an app that manages your games, runs in the background, collects usage data, and does a dozen other things you never asked for.
 
-**Why choose this over DLSS Swapper or other similar apps?**
+**Why choose this over DLSS Swapper or other similar apps?**  
 Other apps offer more features, but DLSS Updater focuses on simplicity. It's a lightweight, no-setup tool that quickly scans your game folders and updates DLSS files without extra integrations or background processes.
 
-**Does it require installation?**
+**Does it require installation?**  
 No. DLSS Updater is a portable tool and can be run directly from a folder or USB drive.
 
-**How large is the download?**
+**How large is the download?**  
 The download is around 10 MB. Additional space will be used when downloading updated DLSS files.
 
-**Can updating DLSS files break my game?**
+**Can updating DLSS files break my game?**  
 Yes. Updating DLSS can cause issues in some games. Restore the original file or verify game files through your launcher (Steam, etc.) if this happens.
 
-**Why did my antivirus flag DLSS Updater?**
+**Why did my antivirus flag DLSS Updater?**  
 This can happen because the tool downloads and replaces files, behaviour similar to some malware, which may trigger heuristic detection. The tool is open source and safe to use when downloaded from the official source.
 
 ---
